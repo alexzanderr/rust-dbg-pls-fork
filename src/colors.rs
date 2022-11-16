@@ -3,12 +3,26 @@ use std::io::Cursor;
 use once_cell::sync::OnceCell;
 use syntect::{
     easy::HighlightLines,
-    highlighting::{Theme, ThemeSet},
-    parsing::{SyntaxDefinition, SyntaxSet, SyntaxSetBuilder},
-    util::{as_24_bit_terminal_escaped, LinesWithEndings},
+    highlighting::{
+        Theme,
+        ThemeSet
+    },
+    parsing::{
+        SyntaxDefinition,
+        SyntaxSet,
+        SyntaxSetBuilder
+    },
+    util::{
+        as_24_bit_terminal_escaped,
+        LinesWithEndings
+    }
 };
 
-use crate::{pretty::pretty_string, DebugPls, Formatter};
+use crate::{
+    pretty::pretty_string,
+    DebugPls,
+    Formatter
+};
 
 fn syntax() -> &'static SyntaxSet {
     static INSTANCE: OnceCell<SyntaxSet> = OnceCell::new();
@@ -16,11 +30,13 @@ fn syntax() -> &'static SyntaxSet {
         let mut syntax_set = SyntaxSetBuilder::new();
         syntax_set.add(
             SyntaxDefinition::load_from_str(
-                include_str!("../assets/syntaxes/Rust/Rust.sublime-syntax"),
+                include_str!(
+                    "../assets/syntaxes/Rust/Rust.sublime-syntax"
+                ),
                 true,
-                None,
+                None
             )
-            .unwrap(),
+            .unwrap()
         );
         syntax_set.build()
     })
@@ -29,12 +45,15 @@ fn syntax() -> &'static SyntaxSet {
 fn theme() -> &'static Theme {
     static INSTANCE: OnceCell<Theme> = OnceCell::new();
     INSTANCE.get_or_init(|| {
-        let s = include_str!("../assets/themes/sublime-monokai-extended/Monokai Extended.tmTheme");
+        let s = include_str!("../assets/themes/one-dark");
         ThemeSet::load_from_reader(&mut Cursor::new(s.as_bytes())).unwrap()
     })
 }
 
-fn highlight(s: &str, mut w: impl std::fmt::Write) -> std::fmt::Result {
+fn highlight(
+    s: &str,
+    mut w: impl std::fmt::Write
+) -> std::fmt::Result {
     let ps = syntax();
     let syntax = ps.find_syntax_by_name("Rust").unwrap();
     let theme = theme();
@@ -52,7 +71,10 @@ fn highlight(s: &str, mut w: impl std::fmt::Write) -> std::fmt::Result {
 pub struct ColorStr<'a>(pub &'a str);
 
 impl<'a> std::fmt::Display for ColorStr<'a> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut std::fmt::Formatter<'_>
+    ) -> std::fmt::Result {
         let expr = syn::parse_str(self.0).map_err(|_| std::fmt::Error)?;
         highlight(&pretty_string(expr), f)
     }
@@ -61,20 +83,28 @@ impl<'a> std::fmt::Display for ColorStr<'a> {
 struct Color<'a>(&'a dyn DebugPls);
 
 impl<'a> std::fmt::Debug for Color<'a> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut std::fmt::Formatter<'_>
+    ) -> std::fmt::Result {
         highlight(&pretty_string(Formatter::process(self.0)), f)
     }
 }
 
 impl<'a> std::fmt::Display for Color<'a> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut std::fmt::Formatter<'_>
+    ) -> std::fmt::Result {
         std::fmt::Debug::fmt(self, f)
     }
 }
 
 #[cfg_attr(docsrs, doc(cfg(feature = "colors")))]
 /// Wraps a [`DebugPls`] type into a [`std::fmt::Debug`] type for use in regular [`format!`]
-pub fn color(value: &impl DebugPls) -> impl std::fmt::Debug + std::fmt::Display + '_ {
+pub fn color(
+    value: &impl DebugPls
+) -> impl std::fmt::Debug + std::fmt::Display + '_ {
     Color(value)
 }
 

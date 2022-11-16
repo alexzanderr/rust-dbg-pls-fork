@@ -15,7 +15,7 @@ include = [
     "src",
     "README.md",
     "assets/syntaxes/Rust/Rust.sublime-syntax",
-    "assets/themes/sublime-monokai-extended/Monokai Extended.tmTheme",
+    "assets/themes/one-dark",
 ]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
